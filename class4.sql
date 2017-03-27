@@ -61,3 +61,12 @@ SELECT f1.title, f1.rating, f2.title, f2.rating
 FROM film f1, film f2
 WHERE f1.film_id > f2.film_id
 AND f1.rating = f2.rating;
+
+-- 8
+
+SELECT DISTINCT film.title, staff.first_name, staff.last_name
+FROM film, inventory inv, store str, staff
+WHERE film.film_id = inv.film_id
+AND inv.store_id = str.store_id
+AND str.store_id = 2
+AND str.manager_staff_id = staff.staff_id;
