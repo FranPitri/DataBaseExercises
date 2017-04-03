@@ -21,14 +21,25 @@ WHERE a1.actor_id NOT IN (SELECT DISTINCT fa.actor_id
 --   FROM rental r, customer c
 -- WHERE r.customer_id = c.customer_id;
 
-SELECT c.first_name, c.last_name
-  FROM customer c
+SELECT  c.customer_id, c.first_name, c.last_name
+  FROM rental r1, customer c
 WHERE NOT EXISTS (SELECT *
-					FROM rental r, customer cc
-				  WHERE cc.customer_id = r.customer_id
-				    AND c.customer_id <> cc.customer_id);
+					FROM rental r2
+				  WHERE r1.customer_id = r2.customer_id
+				    AND r1.rental_id <> r2.rental_id)
+  AND r1.customer_id = c.customer_id
+ORDER BY 1;
 
 -- 4
+
+SELECT DISTINCT c.customer_id, c.first_name, c.last_name
+  FROM rental r1, customer c
+WHERE EXISTS (SELECT *
+					FROM rental r2
+				  WHERE r1.customer_id = r2.customer_id
+				    AND r1.rental_id <> r2.rental_id)
+  AND r1.customer_id = c.customer_id
+ORDER BY 1;
 
 -- 5
 				    
