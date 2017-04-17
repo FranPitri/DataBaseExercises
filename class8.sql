@@ -84,6 +84,10 @@ SELECT rating, AVG(`length`)
   FROM film
 GROUP BY rating;
 
+SELECT rating, COUNT(*)
+  FROM film
+GROUP BY rating;
+
 -- Subgrupos
 SELECT rating, special_features, AVG(`length`)
   FROM film
