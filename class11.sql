@@ -39,7 +39,12 @@ SELECT film.title, inventory_id, rental.rental_id
   	LEFT OUTER JOIN rental USING (inventory_id)
 WHERE rental.rental_id IS NULL;
 
-SELECT film.title
-FROM film, inventory
-WHERE film.film_id = inventory.film_id
-AND film.title = 'ACADEMY DINOSAUR';
+-- 6
+
+SELECT customer.first_name, customer.last_name, inventory.store_id, film.title, rental.rental_date, rental.return_date
+  FROM film
+  	INNER JOIN inventory USING (film_id)
+  	INNER JOIN rental USING (inventory_id)
+  	INNER JOIN customer USING (customer_id)
+ORDER BY inventory.store_id, customer.last_name;
+  
