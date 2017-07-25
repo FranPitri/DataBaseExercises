@@ -58,7 +58,7 @@ SELECT CONVERT("2006-02-15", DATETIME);
 -- NVL() and IFNULL() functions work in the same way: 
 -- they check whether an expression is NULL or not; if it is, they return a second expression (a default value).
 
--- NVL() is an Oracle function, so here it is an IFNULL() example:
+-- NVL() is an Oracle function, so here is an IFNULL() example:
 
 SELECT rental_id, IFNULL(return_date, 'La pelicula no fue devuelta aun') as fecha_de_devolucion
   FROM rental
