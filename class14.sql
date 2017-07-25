@@ -55,4 +55,30 @@ SELECT CONVERT("2006-02-15", DATETIME);
 
 -- 6
 
+-- NVL() and IFNULL() functions work in the same way: 
+-- they check whether an expression is NULL or not; if it is, they return a second expression (a default value).
 
+-- NVL() is an Oracle function, so here it is an IFNULL() example:
+
+SELECT rental_id, IFNULL(return_date, 'La pelicula no fue devuelta aun') as fecha_de_devolucion
+  FROM rental
+WHERE rental_id = 12610
+  OR rental_id = 12611;
+  
+-- ISNULL() function returns 1 if the expression passed is NULL, otherwise it returns 0.
+  
+SELECT rental_id, ISNULL(return_date) as pelicula_faltante
+  FROM rental
+WHERE rental_id = 12610
+  OR rental_id = 12611;
+  
+-- COALESCE() function returns the first non-NULL argument of the passed list.
+  
+SELECT COALESCE(NULL,
+				NULL,
+				(SELECT return_date
+				FROM rental
+				WHERE rental_id = 12610), -- null date
+				(SELECT return_date
+				FROM rental
+				WHERE rental_id = 12611)) as primer_valor_no_nulo;
