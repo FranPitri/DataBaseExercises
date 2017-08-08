@@ -67,7 +67,91 @@ INSERT INTO `employees`(`employeeNumber`,`lastName`,`firstName`,`extension`,`ema
 UPDATE employees set employeeNumber = employeeNumber - 20;
 
 -- This query doesn't work because it runs on cascade.
--- The distance between the last 2 entry's employeeNumber is exactly 20, /
--- so if it added 20 to the second entry, it's value would be the same than the 3rd column's entry 
+-- The distance between the last 2 entrys' employeeNumber is exactly 20, /
+-- so if it added 20 to the second entry, its value would be the same than the 3rd column's entry 
 
 UPDATE employees set employeeNumber = employeeNumber + 20;
+
+-- 3
+
+ALTER TABLE employees
+ADD age TINYINT UNSIGNED DEFAULT 69;
+
+ALTER TABLE employees
+   ADD CONSTRAINT age CHECK(age >= 16 AND age <= 70);
+   
+-- 5
+   
+ALTER TABLE employees
+	ADD COLUMN lastUpdate DATETIME;
+
+	
+ALTER TABLE employees
+	ADD COLUMN lastUpdateUser VARCHAR(255);	
+
+-- I chose to create a procedure which updates the given employee's data and to call it in both triggers 
+	
+DROP PROCEDURE IF EXISTS classsixteen.UpdateEmployeeLastUpdate ;
+
+DELIMITER $$
+$$
+CREATE PROCEDURE UpdateEmployeeLastUpdate(IN employee_id INT)
+BEGIN
+	UPDATE employees
+	    SET lastUpdate = NOW(),
+	    lastUpdateUser = CURRENT_USER()
+    WHERE employees.employeeNumber = employee_id;
+END $$
+DELIMITER ;
+
+	
+DELIMITER $$
+CREATE TRIGGER after_employee_update 
+    AFTER UPDATE ON employees
+    FOR EACH ROW 
+BEGIN
+    CALL UpdateEmployeeLastUpdate(NEW.employeeNumber);
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER after_employee_insert 
+    AFTER INSERT ON employees
+    FOR EACH ROW 
+BEGIN
+    CALL UpdateEmployeeLastUpdate(NEW.employeeNumber);
+END$$
+DELIMITER ;
+
+-- This is actually generating an endless loop since the store procedure calls the trigger again.
+-- Soooo FIXME i guess.
+
+update employees set lastName = 'Phanny' where employeeNumber = 1016;
+
+-- 6
+
+-- ins_film Inserts a new film_text entry, with the same values as the added film.
+
+BEGIN
+    INSERT INTO film_text (film_id, title, description)
+        VALUES (new.film_id, new.title, new.description);
+END
+
+-- upd_film Updates the corresponding existing film_text entry for the updated film. 
+
+BEGIN
+	IF (old.title != new.title) OR (old.description != new.description) OR (old.film_id != new.film_id)
+	THEN
+	    UPDATE film_text
+	        SET title=new.title,
+	            description=new.description,
+	            film_id=new.film_id
+	    WHERE film_id=old.film_id;
+	END IF;
+END
+
+-- del_film Deletes the corresponding existing film_text entry for the deleted film. 
+
+BEGIN
+    DELETE FROM film_text WHERE film_id = old.film_id;
+END
