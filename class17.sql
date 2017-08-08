@@ -36,7 +36,7 @@ CREATE INDEX address_index ON address(postal_code);
 -- After the creation of the index, the query performance improved by ~110ms (from ~128ms to ~12ms)
 
 -- 2
--- Altough i am not able to see any difference in this context,
+-- Altough I am not able to see any difference in this context,
 -- the column last_name should be more perfomant since it has an index.
 
 select *
@@ -48,6 +48,8 @@ from actor
 WHERE last_name IN ('MONROE');
 
 -- 3
+
+-- Perfomance with MATCH..AGAINST is arround 4x better since it is working with the fulltext index.
 
 SELECT *
 FROM film
