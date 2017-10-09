@@ -1,0 +1,408 @@
+1--------------------------------------------------------------------- 
+
+docker run --name redis-cont -p 6379:6379 -v ~/.redis-container/data:/data -d redis
+
+2---------------------------------------------------------------------
+
+docker run -it --link redis-cont:redis --rm redis redis-cli -h redis -p 6379
+
+PING [message]
+CONFIG GET *
+
+3---------------------------------------------------------------------
+
+redis:6379> SET cool 'Yeah'
+OK
+redis:6379> GET cool
+"Yeah"
+
+redis:6379> GETRANGE cool 1 2
+"ea"
+
+redis:6379> SETRANGE cool 1 'e e e ee eee e eeeee'
+(integer) 21
+redis:6379> GET cool
+"Ye e e ee eee e eeeee"
+
+redis:6379> APPEND cool 'ah!11!!'
+(integer) 28
+redis:6379> GET cool
+"Ye e e ee eee e eeeeeah!11!!"
+
+4---------------------------------------------------------------------
+
+redis:6379> HMSET class name 'Database II' description 'Just a database class' students 19
+redis:6379> HGETALL class
+1) "name"
+2) "Database II"
+3) "description"
+4) "Just a database class"
+5) "students"
+6) "19"
+
+redis:6379> HGET class name
+"Database II"
+
+redis:6379> HINCRBY class students 401
+(integer) 420
+redis:6379> HGET class students
+"420"
+
+redis:6379> HLEN class
+(integer) 3
+
+5---------------------------------------------------------------------
+
+redis:6379> LPUSH cactaceae 'Carnegiea gigantea' 'Opuntia' 'Lophophora williamsii' 'Mammillaria'
+(integer) 4
+redis:6379> LRANGE cactaceae 0 -1
+1) "Mammillaria"
+2) "Lophophora williamsii"
+3) "Opuntia"
+4) "Carnegiea gigantea"
+
+redis:6379> LINDEX cactaceae 1
+"Lophophora williamsii"
+
+redis:6379> LTRIM cactaceae 1 3
+OK
+redis:6379> LRANGE cactaceae 0 -1
+1) "Lophophora williamsii"
+2) "Opuntia"
+3) "Carnegiea gigantea"
+
+redis:6379> LPUSH plants 'Roses'
+(integer) 1
+redis:6379> RPOPLPUSH cactaceae plants
+"Carnegiea gigantea"
+redis:6379> LRANGE cactaceae 0 -1
+1) "Lophophora williamsii"
+2) "Opuntia"
+redis:6379> LRANGE plants 0 -1
+1) "Carnegiea gigantea"
+2) "Roses"
+
+6--------------------------------------------------------------------
+
+redis:6379> SADD yummyyummy-onion-soup '4 cups sliced onions' '2 tablespoons olive oil' '2 slices Swiss cheese, diced' '1/4 cup grated Parmesan cheese' '1/2 cup unsalted butter'
+(integer) 5
+redis:6379> SMEMBERS yummyyummy-onion-soup
+1) "1/4 cup grated Parmesan cheese"
+2) "2 slices Swiss cheese, diced"
+3) "2 tablespoons olive oil"
+4) "4 cups sliced onions"
+5) "1/2 cup unsalted butter"
+
+redis:6379> SCARD yummyyummy-onion-soup
+(integer) 5
+
+redis:6379> SPOP yummyyummy-onion-soup
+"2 slices Swiss cheese, diced"
+redis:6379> SMEMBERS yummyyummy-onion-soup
+1) "1/2 cup unsalted butter"
+2) "1/4 cup grated Parmesan cheese"
+3) "4 cups sliced onions"
+4) "2 tablespoons olive oil"
+
+redis:6379> SISMEMBER yummyyummy-onion-soup 'Pepper'
+(integer) 0
+
+redis:6379> SSCAN yummyyummy-onion-soup 0 MATCH '*4*'
+1) "0"
+2) 1) "1/4 cup grated Parmesan cheese"
+   2) "4 cups sliced onions"
+
+7---------------------------------------------------------------------
+
+redis:6379> ZADD top5 1 'Bodak Yellow (Money Moves)' 2 'Rockstar' 3 'Look What You Made Me Do' 4 '1-800-273-8255' 5 'Despacito'
+(integer) 5
+
+redis:6379> ZRANGE top5 0 -1 WITHSCORES
+ 1) "Bodak Yellow (Money Moves)"
+ 2) "1"
+ 3) "Rockstar"
+ 4) "2"
+ 5) "Look What You Made Me Do"
+ 6) "3"
+ 7) "1-800-273-8255"
+ 8) "4"
+ 9) "Despacito"
+10) "5"
+
+redis:6379> ZRANK top5 'Despacito'
+(integer) 4
+
+redis:6379> ZREM top5 'Despacito' // thank you
+(integer) 1
+redis:6379> ZRANGE top5 0 -1
+1) "Bodak Yellow (Money Moves)"
+2) "Rockstar"
+3) "Look What You Made Me Do"
+4) "1-800-273-8255"
+
+8---------------------------------------------------------------------
+
+redis:6379> PUBLISH important-stuff 'Our eyes are always the same size from birth, but our nose and ears never stop growing.'
+(integer) 1
+redis:6379> PUBLISH important-stuff 'The only thing harder than diamonds is Chuck Norris'
+(integer) 1
+
+redis:6379> SUBSCRIBE important-stuff
+Reading messages... (press Ctrl-C to quit)
+1) "subscribe"
+2) "important-stuff"
+3) (integer) 1
+1) "message"
+2) "important-stuff"
+3) "Our eyes are always the same size from birth, but our nose and ears never stop growing."
+1) "message"
+2) "important-stuff"
+3) "The only thing harder than diamonds is Chuck Norris"
+
+9---------------------------------------------------------------------
+
+redis:6379> MULTI
+OK
+redis:6379> SET isthis 'atomic?'
+QUEUED
+redis:6379> GET isthis
+QUEUED
+redis:6379> EXEC
+1) OK
+2) "atomic?"
+
+10---------------------------------------------------------------------
+
+Redis data, by default, are saved to disk in a .rdb file, which is a point-in-time snapshot of your Redis dataset. 
+The snapshot is made at specified intervals, and so is perfect for your backups.
+
+You can use the following command in redis-cli to check where your data is stored.
+
+redis:6379> config get dir
+1) "dir"
+2) "/data"
+
+You should see a dump.rdb file. That's the Redis data. 
+If appendonly is also enabled, you will also see an appendonly.aof or another .aof file, which contains a log of all write operations received by the server.
+
+To restore it, simply put the .rdb file in the desired redis server /data folder.
+
+11---------------------------------------------------------------------
+
+redis-benchmark [option] [option value] 
+
+The following command checks Redis by calling 100000 commands.
+
+redis-benchmark -n 100000
+
+(
+I used it from my docker container:
+docker run -it --link redis-cont:redis --rm redis redis-benchmark -n 100000 -h redis -p 6379 	
+)
+
+MY OUTPUT:
+
+====== PING_INLINE ======
+  100000 requests completed in 0.80 seconds
+  50 parallel clients
+  3 bytes payload
+  keep alive: 1
+
+99.99% <= 1 milliseconds
+100.00% <= 1 milliseconds
+124688.28 requests per second
+
+====== PING_BULK ======
+  100000 requests completed in 0.80 seconds
+  50 parallel clients
+  3 bytes payload
+  keep alive: 1
+
+99.96% <= 1 milliseconds
+100.00% <= 1 milliseconds
+125786.16 requests per second
+
+====== SET ======
+  100000 requests completed in 0.77 seconds
+  50 parallel clients
+  3 bytes payload
+  keep alive: 1
+
+99.95% <= 1 milliseconds
+100.00% <= 2 milliseconds
+100.00% <= 2 milliseconds
+129032.27 requests per second
+
+====== GET ======
+  100000 requests completed in 0.80 seconds
+  50 parallel clients
+  3 bytes payload
+  keep alive: 1
+
+100.00% <= 0 milliseconds
+124378.11 requests per second
+
+====== INCR ======
+  100000 requests completed in 0.84 seconds
+  50 parallel clients
+  3 bytes payload
+  keep alive: 1
+
+99.94% <= 1 milliseconds
+99.95% <= 2 milliseconds
+100.00% <= 2 milliseconds
+119617.22 requests per second
+
+====== LPUSH ======
+  100000 requests completed in 0.77 seconds
+  50 parallel clients
+  3 bytes payload
+  keep alive: 1
+
+99.99% <= 1 milliseconds
+100.00% <= 1 milliseconds
+129701.68 requests per second
+
+====== RPUSH ======
+  100000 requests completed in 0.76 seconds
+  50 parallel clients
+  3 bytes payload
+  keep alive: 1
+
+100.00% <= 0 milliseconds
+130718.95 requests per second
+
+====== LPOP ======
+  100000 requests completed in 0.77 seconds
+  50 parallel clients
+  3 bytes payload
+  keep alive: 1
+
+100.00% <= 0 milliseconds
+129870.13 requests per second
+
+====== RPOP ======
+  100000 requests completed in 0.80 seconds
+  50 parallel clients
+  3 bytes payload
+  keep alive: 1
+
+100.00% <= 0 milliseconds
+125000.00 requests per second
+
+====== SADD ======
+  100000 requests completed in 0.77 seconds
+  50 parallel clients
+  3 bytes payload
+  keep alive: 1
+
+100.00% <= 0 milliseconds
+130208.34 requests per second
+
+====== HSET ======
+  100000 requests completed in 0.78 seconds
+  50 parallel clients
+  3 bytes payload
+  keep alive: 1
+
+100.00% <= 0 milliseconds
+128369.71 requests per second
+
+====== SPOP ======
+  100000 requests completed in 0.78 seconds
+  50 parallel clients
+  3 bytes payload
+  keep alive: 1
+
+100.00% <= 0 milliseconds
+127877.23 requests per second
+
+====== LPUSH (needed to benchmark LRANGE) ======
+  100000 requests completed in 0.76 seconds
+  50 parallel clients
+  3 bytes payload
+  keep alive: 1
+
+100.00% <= 0 milliseconds
+132275.14 requests per second
+
+====== LRANGE_100 (first 100 elements) ======
+  100000 requests completed in 1.42 seconds
+  50 parallel clients
+  3 bytes payload
+  keep alive: 1
+
+99.98% <= 1 milliseconds
+100.00% <= 1 milliseconds
+70274.07 requests per second
+
+====== LRANGE_300 (first 300 elements) ======
+  100000 requests completed in 3.61 seconds
+  50 parallel clients
+  3 bytes payload
+  keep alive: 1
+
+89.94% <= 1 milliseconds
+99.99% <= 2 milliseconds
+100.00% <= 2 milliseconds
+27708.51 requests per second
+
+====== LRANGE_500 (first 450 elements) ======
+  100000 requests completed in 4.71 seconds
+  50 parallel clients
+  3 bytes payload
+  keep alive: 1
+
+1.59% <= 1 milliseconds
+99.95% <= 2 milliseconds
+99.99% <= 3 milliseconds
+100.00% <= 3 milliseconds
+21217.91 requests per second
+
+====== LRANGE_600 (first 600 elements) ======
+  100000 requests completed in 5.96 seconds
+  50 parallel clients
+  3 bytes payload
+  keep alive: 1
+
+0.03% <= 1 milliseconds
+94.79% <= 2 milliseconds
+99.81% <= 3 milliseconds
+99.94% <= 4 milliseconds
+99.98% <= 5 milliseconds
+99.99% <= 6 milliseconds
+100.00% <= 7 milliseconds
+100.00% <= 7 milliseconds
+16778.52 requests per second
+
+====== MSET (10 keys) ======
+  100000 requests completed in 0.75 seconds
+  50 parallel clients
+  3 bytes payload
+  keep alive: 1
+
+99.97% <= 1 milliseconds
+100.00% <= 1 milliseconds
+133155.80 requests per second
+
+12---------------------------------------------------------------------
+
+// With python driver
+
+$ sudo pip install redis
+
+-----------------
+
+import redis
+
+r = redis.Redis(
+    host='hostname',
+    port=port, 
+    password='password')
+
+
+r.set('foo', 'bar')
+value = r.get('foo')
+print(value)
+
+# Output: bar
